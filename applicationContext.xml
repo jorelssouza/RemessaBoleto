@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+           http://www.springframework.org/schema/tx
+           http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+
+	
+	
+
+	
+	
+     <!-- DATASOURCE SA AMBIENTE DE TESTE -->
+	<bean id="dataSourceTeste" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+		<property name="url" value="jdbc:oracle:thin:@10.34.205.37:1521:spsca" />
+		<property name="username" value="P7cBtsyHDL2eV3iecbYVJw==" />
+		<property name="password" value="QE0SyMdCNiktRwZyWbnZzvgV53wqOC7D" />
+		<property name="validationQuery" value="select 1 from dual" />
+		<property name="testOnBorrow" value="true" />
+		<property name="testOnReturn" value="true" />
+		<property name="testWhileIdle" value="true" />
+	</bean>
+    <!-- DATASOURCE SA AMBIENTE DE TESTE -->	
+	
+	
+	<!-- DATASOURCE LOJA VIRTUAL AMBIENTE DE TESTE -->
+	<bean id="dataSourceLVTeste" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+		<property name="url" value="jdbc:oracle:thin:@10.34.205.40:1521:splv" />
+		<property name="username" value="efQ1v0fyheNyr+RaZ/YH4w==" />
+		<property name="password" value="2HwhQRqqT/iS3BX92ZLfTZl8Xg/tD0YQ" />
+		<property name="validationQuery" value="select 1 from dual" />
+		<property name="testOnBorrow" value="true" />
+		<property name="testOnReturn" value="true" />
+		<property name="testWhileIdle" value="true" />
+	</bean>
+	<!-- Banco de dados desenvolvimento -->
+	<bean id="dataSourceDesenvolvimento" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+		<property name="url" value="xxxxxx" />
+		<property name="username" value="yyy" />
+		<property name="password" value="ddddd" />
+		<property name="validationQuery" value="select 1 from dual" />
+		<property name="testOnBorrow" value="true" />
+		<property name="testOnReturn" value="true" />
+		<property name="testWhileIdle" value="true" />
+	</bean>
+	<!-- Banco de dados desenvolvimento -->
+
+	<bean id="dataSource" class="br.com.digicon.remessaBoleto.spring.ChoiceBeanByNameJNDI">
+		<property name="jndiName" value="java:comp/env/ambiente" />
+		<property name="prefix" value="dataSource" />
+		<property name="defaultChoice" value="Teste" />
+	</bean>
+
+	<bean id="dataSourceLV" class="br.com.digicon.remessaBoleto.spring.ChoiceBeanByNameJNDI">
+		<property name="jndiName" value="java:comp/env/ambiente" />
+		<property name="prefix" value="dataSourceLV" />
+		<property name="defaultChoice" value="Teste" />
+	</bean>
+
+
+	<bean id="autoproxy" class="br.com.digicon.remessaBoleto.spring.ProxyByNameAdvisorAutoProxyCreator">
+		<property name="proxyTargetClass">
+			<value>true</value>
+		</property>
+		<property name="beanNamesRegex">
+			<value>[a-zA-Z_0-9]+Facade</value>
+		</property>
+	</bean>
+
+	<bean id="transactionAdvisor" class="org.springframework.transaction.interceptor.TransactionAttributeSourceAdvisor">
+		<constructor-arg>
+			<ref local="transactionInterceptor" />
+		</constructor-arg>
+	</bean>
+
+
+	<bean id="transactionInterceptor" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+		<property name="transactionManager">
+			<ref local="transactionManager" />
+		</property>
+		<property name="transactionAttributeSource">
+			<ref local="transactionAttributeSource" />
+		</property>
+	</bean>
+
+	<bean id="transactionAdvisorLV" class="org.springframework.transaction.interceptor.TransactionAttributeSourceAdvisor">
+		<property name="transactionInterceptor">
+			<ref local="transactionInterceptorLV" />
+		</property>
+
+	</bean>	
+
+	
+	<bean id="transactionInterceptorLV" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+		<property name="transactionManager">
+			<ref local="transactionManagerLV" />
+		</property>
+		<property name="transactionAttributeSource">
+			<ref local="transactionAttributeSource" />
+		</property>
+	</bean>	
+
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource">
+			<ref local="dataSource" />
+		</property>
+	</bean>
+	
+	<bean id="transactionManagerLV" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource">
+			<ref local="dataSourceLV" />
+		</property>
+	</bean>
+
+	<bean id="transactionAttributeSource" class="br.com.digicon.remessaBoleto.spring.PackageNameMatchTransactionAttributeSource">
+		<property name="packageName">
+			<value>br.com.digicon.remessaBoleto.facade</value>
+		</property>
+		<property name="properties">
+			<props>
+				<prop key="get*">PROPAGATION_SUPPORTS,ISOLATION_DEFAULT</prop>
+				<prop key="find*">PROPAGATION_SUPPORTS,ISOLATION_DEFAULT</prop>
+				<prop key="report*">PROPAGATION_SUPPORTS,ISOLATION_DEFAULT</prop>
+				<prop key="search*">PROPAGATION_SUPPORTS,ISOLATION_DEFAULT</prop>
+				<prop key="executar*">PROPAGATION_SUPPORTS,ISOLATION_DEFAULT</prop>
+				<prop key="proce*">PROPAGATION_REQUIRED,ISOLATION_READ_COMMITTED,-Throwable</prop>
+				<prop key="cancelar*">PROPAGATION_REQUIRED,ISOLATION_READ_COMMITTED,-Throwable</prop>
+				<prop key="insert*">PROPAGATION_REQUIRED,ISOLATION_READ_COMMITTED,-Throwable</prop>
+				<prop key="update*">PROPAGATION_REQUIRED,ISOLATION_READ_COMMITTED,-Throwable</prop>
+				<prop key="save*">PROPAGATION_REQUIRED,ISOLATION_READ_COMMITTED,-Throwable</prop>
+				<prop key="delete*">PROPAGATION_REQUIRED,ISOLATION_READ_COMMITTED,-Throwable</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+		<property name="dataSource">
+			<ref local="dataSource" />
+		</property>
+		<property name="configLocation">
+			<value>sqlmap-config.xml</value>
+		</property>
+	</bean>
+	
+	<bean id="sqlMapClientLV" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+		<property name="dataSource">
+			<ref local="dataSourceLV" />
+		</property>
+		<property name="configLocation">
+			<value>sqlmap-configLV.xml</value>
+		</property>
+	</bean>
+	 
+	<context:annotation-config/>
+	
+	<bean id="remessaBoletoVCWService"  class="br.com.digicon.remessaBoleto.service.RemessaBoletoVCWService" autowire="byName" />
+	
+	<bean id="remessaBoletoSAService"  class="br.com.digicon.remessaBoleto.service.RemessaBoletoSAService" autowire="byName" />
+	
+	<bean id="remessaBoletoLVService"  class="br.com.digicon.remessaBoleto.service.RemessaBoletoLVService" autowire="byName" />
+
+	<bean id="remessaBoletoFacade"  class="br.com.digicon.remessaBoleto.facade.RemessaBoletoFacade" autowire="byName" />
+	
+	<bean id="remessaBoletoLVFacade"  class="br.com.digicon.remessaBoleto.facade.RemessaBoletoLVFacade" autowire="byName" />
+	
+	<bean id="RemessaBoletoSAFacade"  class="br.com.digicon.remessaBoleto.facade.RemessaBoletoSAFacade" autowire="byName" />
+	
+	<bean id="RemessaBoletoVCWFacade"  class="br.com.digicon.remessaBoleto.facade.RemessaBoletoVCWFacade" autowire="byName" />	
+	
+	<bean id="boletosEmitidosDAO"  class="br.com.digicon.remessaBoleto.dao.BoletosEmitidosDAO">
+		<property name="sqlMapClient">
+			<ref local="sqlMapClient" />
+		</property>
+	</bean>
+	
+	<bean id="sysParameterDAO"  class="br.com.digicon.remessaBoleto.dao.SysParameterDAO">
+		<property name="sqlMapClient">
+			<ref local="sqlMapClient" />
+		</property>
+	</bean>
+	
+	<bean id="parametroLVDAO"  class="br.com.digicon.remessaBoleto.dao.ParametroLVDAO">
+		<property name="sqlMapClient">
+			<ref local="sqlMapClientLV" />
+		</property>
+	</bean>
+	
+</beans>

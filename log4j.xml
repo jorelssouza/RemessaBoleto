@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration>
+	<appender name="FILE" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="datePattern" value="'.'dd-MM-yyyy" />
+		<param name="file" value="logs/remessaBoleto.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="conversionPattern" value="%d{HH:mm:ss,SSS} [%15.15t] %-5p %c %x - %m\r\n" />
+		</layout>
+	</appender>
+
+	<appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="conversionPattern" value="%d{HH:mm:ss,SSS} [%15.15t] %-5p %c %x - %m\n" />
+		</layout>
+	</appender>
+
+	<category name="org.springframework">
+		<level value="ERROR" />
+	</category>
+
+	<category name="org.apache">
+		<level value="ERROR" />
+	</category>
+
+	<category name="br.com.digicon.remessaBoleto.spring">
+	    <level value="OFF" />
+	</category>
+
+	<category name="net.sf.jasperreports">
+	    <level value="ERROR" />
+	</category>
+
+    <category name="java.sql">
+        <level value="ERROR" />
+    </category>
+
+    <category name="com.ibatis">
+        <level value="WARN" />
+    </category>
+
+	<root>
+		<level value="DEBUG" />
+		<appender-ref ref="CONSOLE" />
+		<appender-ref ref="FILE" />
+	</root>
+
+</log4j:configuration>
